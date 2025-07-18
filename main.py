@@ -35,6 +35,13 @@ async def main():
 
     await dp.start_polling(bot)
 
+    from private_chat import setup_private_handlers
+    from group import setup_group_handlers
+    from channel import setup_channel_handlers
+
+    setup_private_handlers(dp)
+    setup_group_handlers(dp)
+    setup_channel_handlers(dp, bot)
 
 if __name__ == "__main__":
     asyncio.run(main())
