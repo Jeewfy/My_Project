@@ -40,3 +40,37 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+
+
+\async def fetch_news():
+    \\last_entries = set()  # Храним последние записи, чтобы не дублировать
+    \\while True:
+        \\feed = feedparser.parse(RSS_URL)
+       \ new_entries = []
+        
+        \for entry in feed.entries:
+            \if entry.link not in last_entries:
+           \     new_entries.append(entry)
+            \    last_entries.add(entry.link)
+        
+        \# Отправляем новые записи в канал (в обратном порядке, чтобы сначала шли свежие)
+        \for entry in reversed(new_entries):
+           \ message = f"<b>{entry.title}</b>\n\n{entry.description}\n\n<a href='{entry.link}'>Читать далее</a>"
+           \ await bot.send_message(
+              \  chat_id=CHANNEL_ID,
+               \ text=message,
+               \ parse_mode="HTML",
+                \disable_web_page_preview=False
+            )
+           \ await asyncio.sleep(2)  # Задержка между постами
+        
+        \await asyncio.sleep(300)  # Проверяем RSS каждые 5 минут
+
+\async def main():
+    \await asyncio.gather(
+       \ dp.start_polling(bot),
+        \fetch_news()
+    \)
+
+\if __name__ == "__main__":
+    \asyncio.run(main())
