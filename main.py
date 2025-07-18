@@ -28,11 +28,6 @@ async def main():
         await message.answer('Здесь должно быть приветствие')
         logger.info('Бот ответил на команду "start".')
 
-    @dp.message()
-    async def echo(message: types.Message):
-        await message.reply(message.text)
-        logger.info('Бот возвратил сообщение пользователя.')
-
     await dp.start_polling(bot)
 
     from private_chat import setup_private_handlers
