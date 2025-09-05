@@ -14,7 +14,6 @@ async def send_news_task(bot: Bot):
     
     while True:
         try:
-            
             feed = feedparser.parse("https://www.sports.ru/rss/all_news.xml")
             
             new_entries = []
@@ -22,7 +21,6 @@ async def send_news_task(bot: Bot):
                 if entry.link not in last_entries:
                     new_entries.append(entry)
                     last_entries.add(entry.link)
-            
             
             for entry in reversed(new_entries):
                 message = f"📰 {entry.title}\n\n{entry.description}\n\n🔗 Читать далее: {entry.link}"
@@ -35,11 +33,9 @@ async def send_news_task(bot: Bot):
 
         await asyncio.sleep(300) 
 
-def setup_channel_handlers(dp: Dispatcher, bot: Bot):
+def setup_channel_handlers(dp: Dispatcher, bot: Bot):  # ← Только 2 аргумента!
     
-
-    @dp.message(Command('channel_stats'), F.chat.type == "channel")
+    @dp.message(Command('channel_stats'))
     async def channel_stats(message: types.Message):
         await message.answer("Бот канала работает!")
         logger.info("Канал: проверка работы")
-        
