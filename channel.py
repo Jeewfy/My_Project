@@ -23,7 +23,7 @@ async def send_news_task(bot: Bot):
                     new_entries.append(entry)
                     last_entries.add(entry.link)
             
-            # Отправляем новые записи
+            
             for entry in reversed(new_entries):
                 message = f"📰 {entry.title}\n\n{entry.description}\n\n🔗 Читать далее: {entry.link}"
                 await bot.send_message(CHANNEL_ID, message)
@@ -42,3 +42,4 @@ def setup_channel_handlers(dp: Dispatcher, bot: Bot):
     async def channel_stats(message: types.Message):
         await message.answer("Бот канала работает!")
         logger.info("Канал: проверка работы")
+        
