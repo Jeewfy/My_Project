@@ -11,4 +11,7 @@ __pycache__/
 *$py.class
 
 *.pkl
-*.pickle
+
+last_entries.pkl
+
+bot.db
