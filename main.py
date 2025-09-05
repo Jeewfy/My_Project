@@ -6,15 +6,14 @@ from aiogram.filters import Command
 from dotenv import load_dotenv, find_dotenv
 from loguru import logger
 import pickle
-import os
 
 load_dotenv(find_dotenv())
 TOKEN = os.getenv('TOKEN')
 CHANNEL_ID = os.getenv('CHANNEL_ID')
+ADMIN_IDS = list(map(int, os.getenv('ADMIN_IDS', '').split(','))) if os.getenv('ADMIN_IDS') else []
 
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
-
 
 def load_last_entries():
     try:
@@ -22,7 +21,6 @@ def load_last_entries():
             return pickle.load(f)
     except FileNotFoundError:
         return set()
-
 
 def save_last_entries(entries):
     with open('last_entries.pkl', 'wb') as f:
@@ -40,7 +38,6 @@ async def fetch_news():
                 if entry.link not in last_entries:
                     new_entries.append(entry)
                     last_entries.add(entry.link)
-            
             
             if new_entries:
                 save_last_entries(last_entries)
@@ -71,7 +68,6 @@ async def start_command(message: types.Message):
     logger.info('Бот ответил на команду "start".')
 
 async def main():
-    
     logger.add('file.log',
                format='{time:YYYY-MM-DD at HH-mm-ss} | {level} | {message}',
                rotation='3 days',
@@ -84,7 +80,7 @@ async def main():
     from group import setup_group_handlers
     from channel import setup_channel_handlers
 
-    setup_private_handlers(dp)
+    setup_private_handlers(dp, ADMIN_IDS)
     setup_group_handlers(dp)
     setup_channel_handlers(dp, bot)
     
