@@ -62,11 +62,6 @@ async def fetch_news():
         
         await asyncio.sleep(300)
 
-@dp.message(Command('start'))
-async def start_command(message: types.Message):
-    await message.answer('Здесь должно быть приветствие')
-    logger.info('Бот ответил на команду "start".')
-
 async def main():
     logger.add('file.log',
                format='{time:YYYY-MM-DD at HH-mm-ss} | {level} | {message}',
@@ -91,3 +86,4 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+    

@@ -1,3 +1,4 @@
+import asyncio
 from aiogram import Dispatcher, types, F, Bot
 from aiogram.filters import Command, StateFilter
 from aiogram.fsm.context import FSMContext
@@ -6,7 +7,6 @@ from loguru import logger
 import aiosqlite
 from datetime import datetime
 import os
-
 
 from keyboards import (
     get_main_keyboard,
@@ -41,16 +41,31 @@ def setup_private_handlers(dp: Dispatcher, admin_ids: list):
     
     @dp.message(Command('start'))
     async def start_command(message: types.Message):
+        user_name = message.from_user.first_name
         welcome_text = (
-            "🤖 <b>Добро пожаловать в спортивный бот!</b>\n\n"
-            "Здесь вы можете:\n"
-            "• 📊 Посмотреть статистику\n"
-            "• 📝 Оставить обратную связь\n"
-            "• 🎮 Поиграть в игры\n"
-            "• 📢 Получить информацию о канале\n\n"
-            "Выберите действие на клавиатуре ниже 👇"
+            f"👋 <b>Привет, {user_name}!</b>\n\n"
+            "🤖 Я - спортивный бот, твой помощник в мире спорта!\n\n"
+            "✨ <b>Что я умею:</b>\n"
+            "• 📊 Показывать статистику\n"
+            "• 📝 Принимать обратную связь\n"
+            "• 🎮 Играть в мини-игры\n"
+            "• 📢 Делиться спортивными новостями\n"
+            "• ⚽ Модерировать групповые чаты\n\n"
+            "🎯 <b>Давайте начнем!</b> Выберите действие в меню ниже 👇"
         )
-        await message.answer(welcome_text, parse_mode="HTML", reply_markup=get_main_keyboard())
+        
+        
+        await message.answer(welcome_text, parse_mode="HTML")
+        
+        
+        await asyncio.sleep(0.5)
+        await message.answer(
+            "🛠 <b>Главное меню</b>\n"
+            "Выберите нужный раздел:",
+            parse_mode="HTML", 
+            reply_markup=get_main_keyboard()
+        )
+        
         logger.info(f'Пользователь {message.from_user.id} начал чат')
 
     
@@ -76,17 +91,25 @@ def setup_private_handlers(dp: Dispatcher, admin_ids: list):
                 logger.error(f"Ошибка получения статистики: {e}")
                 await message.answer("❌ Ошибка получения статистики")
         else:
-            await message.answer("📊 Статистика доступна только администраторам")
+            await message.answer(
+                "📊 <b>Статистика</b>\n\n"
+                "Эта функция доступна только администраторам.\n"
+                "Но вы можете посмотреть спортивную статистику в нашем канале! 📢",
+                parse_mode="HTML"
+            )
 
     @dp.message(F.text == "📝 Обратная связь")
     async def feedback_button(message: types.Message, state: FSMContext):
         await message.answer(
-            "📝 Напишите ваше предложение или жалобу:",
+            "📝 <b>Обратная связь</b>\n\n"
+            "Напишите ваше предложение, пожелание или сообщите о проблеме:",
+            parse_mode="HTML",
             reply_markup=get_back_keyboard()
         )
         
         await message.answer(
-            "Или воспользуйтесь быстрыми опциями:",
+            "📞 <b>Быстрые опции:</b>",
+            parse_mode="HTML",
             reply_markup=get_feedback_inline_keyboard()
         )
         await state.set_state(FeedbackState.waiting_for_feedback)
@@ -105,7 +128,8 @@ def setup_private_handlers(dp: Dispatcher, admin_ids: list):
             "• Фильтр запрещенных слов\n\n"
             "📢 <b>В канале:</b>\n"
             "• Автоматические спортивные новости\n"
-            "• Ежедневные обновления"
+            "• Ежедневные обновления\n\n"
+            "🎯 <b>Начните с главного меню!</b>"
         )
         await message.answer(help_text, parse_mode="HTML")
 
@@ -117,7 +141,7 @@ def setup_private_handlers(dp: Dispatcher, admin_ids: list):
             "🏆 Обзоры матчей и трансляции\n"
             "🎯 Эксклюзивные интервью\n"
             "📊 Статистика и аналитика\n\n"
-            "Подпишитесь, чтобы быть в курсе всех событий!"
+            "🔥 Подпишитесь, чтобы быть в курсе всех событий!"
         )
         await message.answer(
             channel_info_text, 
@@ -128,9 +152,11 @@ def setup_private_handlers(dp: Dispatcher, admin_ids: list):
     @dp.message(F.text == "🎮 Игры")
     async def games_menu(message: types.Message):
         await message.answer(
-            "🎮 <b>Выберите игру:</b>\n\n"
-            "🎯 Угадай число - классическая игра\n"
-            "🎲 Случайное число - генератор чисел",
+            "🎮 <b>Игровая зона!</b>\n\n"
+            "Выберите игру:\n"
+            "🎯 Угадай число - классическая игра на удачу\n"
+            "🎲 Случайное число - мгновенный генератор чисел\n\n"
+            "Давайте повеселимся! 🎉",
             parse_mode="HTML",
             reply_markup=get_games_keyboard()
         )
@@ -140,9 +166,11 @@ def setup_private_handlers(dp: Dispatcher, admin_ids: list):
         import random
         number = random.randint(1, 100)
         await message.answer(
-            f"🎯 Я загадал число от 1 до 100!\n"
+            f"🎯 <b>Угадай число!</b>\n\n"
+            f"Я загадал число от 1 до 100!\n"
             f"Попробуй угадать: /guess число\n\n"
-            f"Например: <code>/guess 42</code>",
+            f"Например: <code>/guess 42</code>\n\n"
+            f"Удачи! 🍀",
             parse_mode="HTML"
         )
 
@@ -150,13 +178,18 @@ def setup_private_handlers(dp: Dispatcher, admin_ids: list):
     async def random_number(message: types.Message):
         import random
         number = random.randint(1, 1000)
-        await message.answer(f"🎲 Ваше случайное число: <b>{number}</b>", parse_mode="HTML")
+        await message.answer(
+            f"🎲 <b>Случайное число:</b>\n\n"
+            f"Ваше число: <b>{number}</b>\n\n"
+            f"Может быть, это ваше счастливое число? 😊",
+            parse_mode="HTML"
+        )
 
     @dp.message(F.text == "⚙️ Настройки")
     async def settings_button(message: types.Message):
         await message.answer(
-            "⚙️ <b>Настройки:</b>\n\n"
-            "Выберите опцию:",
+            "⚙️ <b>Настройки</b>\n\n"
+            "Выберите опцию для настройки:",
             parse_mode="HTML",
             reply_markup=get_settings_keyboard()
         )
@@ -164,7 +197,7 @@ def setup_private_handlers(dp: Dispatcher, admin_ids: list):
     @dp.message(F.text == "🔔 Уведомления")
     async def notifications_settings(message: types.Message):
         await message.answer(
-            "🔔 <b>Настройки уведомлений:</b>\n\n"
+            "🔔 <b>Настройки уведомлений</b>\n\n"
             "Выберите статус уведомлений:",
             parse_mode="HTML",
             reply_markup=get_notifications_keyboard()
@@ -173,8 +206,8 @@ def setup_private_handlers(dp: Dispatcher, admin_ids: list):
     @dp.message(F.text == "🌐 Язык")
     async def language_settings(message: types.Message):
         await message.answer(
-            "🌐 <b>Выбор языка:</b>\n\n"
-            "Select language:",
+            "🌐 <b>Выбор языка</b>\n\n"
+            "Select your language:",
             parse_mode="HTML",
             reply_markup=get_language_keyboard()
         )
@@ -184,7 +217,13 @@ def setup_private_handlers(dp: Dispatcher, admin_ids: list):
         current_state = await state.get_state()
         if current_state:
             await state.clear()
-        await message.answer("Главное меню:", reply_markup=get_main_keyboard())
+        
+        await message.answer(
+            "🏠 <b>Главное меню</b>\n"
+            "Выберите нужный раздел:",
+            parse_mode="HTML",
+            reply_markup=get_main_keyboard()
+        )
 
     
     @dp.message(FeedbackState.waiting_for_feedback)
@@ -287,3 +326,4 @@ def setup_private_handlers(dp: Dispatcher, admin_ids: list):
                 "Выберите действие на клавиатуре ниже 👇",
                 reply_markup=get_main_keyboard()
             )
+            
