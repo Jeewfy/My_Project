@@ -1,7 +1,7 @@
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
 import os
 
-# Основная клавиатура
+
 def get_main_keyboard():
     return ReplyKeyboardMarkup(
         keyboard=[
@@ -13,7 +13,7 @@ def get_main_keyboard():
         input_field_placeholder="Выберите действие..."
     )
 
-# Клавиатура игр
+
 def get_games_keyboard():
     return ReplyKeyboardMarkup(
         keyboard=[
@@ -23,14 +23,14 @@ def get_games_keyboard():
         resize_keyboard=True
     )
 
-# Клавиатура "Назад"
+
 def get_back_keyboard():
     return ReplyKeyboardMarkup(
         keyboard=[[KeyboardButton(text="🔙 Назад")]],
         resize_keyboard=True
     )
 
-# Инлайн клавиатура для канала
+
 def get_channel_inline_keyboard():
     return InlineKeyboardMarkup(
         inline_keyboard=[
@@ -39,7 +39,7 @@ def get_channel_inline_keyboard():
         ]
     )
 
-# Инлайн клавиатура для фидбека
+
 def get_feedback_inline_keyboard():
     return InlineKeyboardMarkup(
         inline_keyboard=[
@@ -48,7 +48,7 @@ def get_feedback_inline_keyboard():
         ]
     )
 
-# Клавиатура настроек
+
 def get_settings_keyboard():
     return ReplyKeyboardMarkup(
         keyboard=[
@@ -58,7 +58,7 @@ def get_settings_keyboard():
         resize_keyboard=True
     )
 
-# Инлайн клавиатура для уведомлений
+
 def get_notifications_keyboard():
     return InlineKeyboardMarkup(
         inline_keyboard=[
@@ -67,7 +67,7 @@ def get_notifications_keyboard():
         ]
     )
 
-# Инлайн клавиатура для выбора языка
+
 def get_language_keyboard():
     return InlineKeyboardMarkup(
         inline_keyboard=[
@@ -77,5 +77,5 @@ def get_language_keyboard():
         ]
     )
 
-# Глобальная переменная для ID канала
+
 CHANNEL_ID = os.getenv('CHANNEL_ID')

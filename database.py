@@ -10,12 +10,12 @@ class Database:
     async def init_db(self):
         """Инициализация базы данных и создание таблиц"""
         async with aiosqlite.connect(self.db_path) as db:
-            # Удаляем старые таблицы если они есть (для чистоты)
+            
             await db.execute('DROP TABLE IF EXISTS user_stats')
             await db.execute('DROP TABLE IF EXISTS feedback')
             await db.execute('DROP TABLE IF EXISTS user_actions')
             
-            # Таблица для статистики пользователей
+            
             await db.execute('''
                 CREATE TABLE IF NOT EXISTS user_stats (
                     user_id INTEGER PRIMARY KEY,
@@ -29,7 +29,7 @@ class Database:
                 )
             ''')
             
-            # Таблица для обратной связи
+            
             await db.execute('''
                 CREATE TABLE IF NOT EXISTS feedback (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -40,7 +40,7 @@ class Database:
                 )
             ''')
             
-            # Таблица для действий пользователей
+            
             await db.execute('''
                 CREATE TABLE IF NOT EXISTS user_actions (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -58,7 +58,7 @@ class Database:
     async def add_or_update_user(self, user: dict):
         """Добавление или обновление пользователя"""
         async with aiosqlite.connect(self.db_path) as db:
-            # Сначала проверяем существующего пользователя
+            
             cursor = await db.execute(
                 'SELECT messages_count FROM user_stats WHERE user_id = ?',
                 (user['id'],)
@@ -66,7 +66,7 @@ class Database:
             existing_user = await cursor.fetchone()
             
             if existing_user:
-                # Обновляем существующего пользователя
+                
                 current_count = existing_user[0]
                 await db.execute('''
                     UPDATE user_stats 
@@ -82,7 +82,7 @@ class Database:
                     user['id']
                 ))
             else:
-                # Добавляем нового пользователя
+                
                 await db.execute('''
                     INSERT INTO user_stats 
                     (user_id, username, first_name, last_name, messages_count, last_seen)
@@ -163,5 +163,5 @@ class Database:
                 'total_feedback': total_feedback
             }
 
-# Глобальный экземпляр базы данных
+
 db = Database()

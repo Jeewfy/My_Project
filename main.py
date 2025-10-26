@@ -16,7 +16,7 @@ ADMIN_IDS = list(map(int, os.getenv('ADMIN_IDS', '').split(','))) if os.getenv('
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
 
-# Импортируем базу данных
+
 from database import db
 
 def load_last_entries():
@@ -46,12 +46,12 @@ async def fetch_news():
                     new_entries.append(entry)
                     last_entries.add(entry.link)
             
-            # Сохраняем новые записи
+            
             if new_entries:
                 save_last_entries(last_entries)
                 logger.info(f"Найдено {len(new_entries)} новых новостей")
             
-            # Отправляем новые новости в канал
+            
             for entry in reversed(new_entries):
                 message = f"<b>{entry.title}</b>\n\n{entry.description}\n\n<a href='{entry.link}'>Читать далее</a>"
                 try:
@@ -65,23 +65,23 @@ async def fetch_news():
                 except Exception as send_error:
                     logger.error(f"Ошибка отправки новости: {send_error}")
                 
-                await asyncio.sleep(2)  # Задержка между отправками
+                await asyncio.sleep(2)  
                 
         except Exception as e:
             logger.error(f"Ошибка в RSS парсере: {e}")
         
-        # Ожидание 5 минут перед следующей проверкой
+        
         await asyncio.sleep(300)
 
 async def setup_handlers():
     """Настройка всех обработчиков"""
     try:
-        # Импортируем обработчики из разных модулей
+        
         from private_chat import setup_private_handlers
         from group import setup_group_handlers
         from channel import setup_channel_handlers
         
-        # Настраиваем обработчики
+        
         setup_private_handlers(dp, ADMIN_IDS)
         setup_group_handlers(dp)
         setup_channel_handlers(dp, bot)
@@ -95,7 +95,7 @@ async def on_startup():
     """Действия при запуске бота"""
     logger.info("Бот запускается...")
     
-    # Инициализируем базу данных
+    
     try:
         await db.init_db()
         logger.success("База данных инициализирована")
@@ -103,13 +103,13 @@ async def on_startup():
         logger.error(f"Ошибка инициализации базы данных: {e}")
         raise
     
-    # Получаем информацию о боте
+    
     bot_info = await bot.get_me()
     logger.success(f"Бот @{bot_info.username} успешно запущен!")
     logger.info(f"ID бота: {bot_info.id}")
     logger.info(f"Имя бота: {bot_info.first_name}")
     
-    # Проверяем переменные окружения
+    
     if not TOKEN:
         logger.error("Токен бота не найден!")
         raise ValueError("Токен бота не установлен")
@@ -126,25 +126,25 @@ async def on_shutdown():
     """Действия при остановке бота"""
     logger.info("Бот останавливается...")
     
-    # Закрываем сессию бота
+    
     await bot.session.close()
     logger.success("Бот успешно остановлен")
 
 async def main():
     """Основная функция запуска бота"""
-    # Настройка логирования
+    
     logger.add(
         'bot.log',
         format='{time:YYYY-MM-DD HH:mm:ss} | {level} | {module}:{function}:{line} | {message}',
-        rotation='10 MB',  # Ротация при достижении 10MB
-        retention='30 days',  # Хранить логи 30 дней
-        compression='zip',  # Сжимать старые логи
+        rotation='10 MB',  
+        retention='30 days',  
+        compression='zip',  
         level='INFO',
         backtrace=True,
         diagnose=True
     )
     
-    # Также логируем в консоль
+    
     logger.add(
         lambda msg: print(msg, flush=True),
         format='<green>{time:HH:mm:ss}</green> | <level>{level}</level> | <cyan>{message}</cyan>',
@@ -153,15 +153,15 @@ async def main():
     )
     
     try:
-        # Действия при запуске
+        
         await on_startup()
         
-        # Настройка обработчиков
+        
         await setup_handlers()
         
         logger.info("Запуск поллинга и RSS задачи...")
         
-        # Запускаем обе задачи параллельно
+        
         polling_task = asyncio.create_task(
             dp.start_polling(bot), 
             name="PollingTask"
@@ -171,7 +171,7 @@ async def main():
             name="RSSTask"
         )
         
-        # Ожидаем завершения обеих задач
+        
         await asyncio.gather(polling_task, rss_task)
         
     except KeyboardInterrupt:
@@ -179,10 +179,10 @@ async def main():
     except Exception as e:
         logger.error(f"Критическая ошибка: {e}")
     finally:
-        # Действия при завершении
+        
         await on_shutdown()
 
-# Дополнительные команды для админов с интеграцией БД
+
 @dp.message(Command('bot_stats'))
 async def bot_stats_command(message: types.Message):
     """Статистика бота для админов"""
@@ -191,10 +191,10 @@ async def bot_stats_command(message: types.Message):
         return
     
     try:
-        # Получаем статистику из базы данных
+        
         stats = await db.get_total_stats()
         
-        # Системная информация
+        
         import psutil
         import platform
         from datetime import datetime
@@ -236,7 +236,7 @@ async def db_backup_command(message: types.Message):
         import shutil
         from datetime import datetime
         
-        # Создаем резервную копию
+        
         backup_name = f"backup_bot_{datetime.now().strftime('%Y%m%d_%H%M%S')}.db"
         shutil.copy2('bot.db', backup_name)
         
@@ -255,7 +255,7 @@ async def user_info_command(message: types.Message):
         return
     
     try:
-        # Парсим ID пользователя из команды
+        
         args = message.text.split()
         if len(args) < 2:
             await message.answer("Использование: /user_info <user_id>")
@@ -268,7 +268,7 @@ async def user_info_command(message: types.Message):
             await message.answer(f"❌ Пользователь с ID {user_id} не найден в базе данных")
             return
         
-        # Распаковываем данные пользователя
+        
         (user_id, username, first_name, last_name, 
          messages_count, warnings_count, first_seen, last_seen) = user_stats
         
@@ -292,10 +292,10 @@ async def user_info_command(message: types.Message):
         await message.answer("❌ Ошибка получения информации о пользователе")
 
 if __name__ == "__main__":
-    # Создаем директорию для логов если её нет
+    
     os.makedirs('logs', exist_ok=True)
     
-    # Запускаем бота
+    
     logger.info("Запуск приложения...")
     
     try:

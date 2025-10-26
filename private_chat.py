@@ -23,7 +23,7 @@ from database import db
 
 CHANNEL_ID = os.getenv('CHANNEL_ID')
 
-# Определение состояний FSM
+
 class FeedbackState(StatesGroup):
     waiting_for_feedback = State()
 
@@ -59,10 +59,10 @@ def setup_private_handlers(dp: Dispatcher, admin_ids: list):
             'last_name': user.last_name
         }
         
-        # Добавляем пользователя в базу данных
+        
         await db.add_or_update_user(user_data)
         
-        # Логируем действие
+        
         await db.log_user_action(user.id, 'start_command', 'Пользователь начал чат')
         
         welcome_text = (
@@ -92,7 +92,7 @@ def setup_private_handlers(dp: Dispatcher, admin_ids: list):
     async def stats_button(message: types.Message):
         user_id = message.from_user.id
         
-        # Обновляем статистику пользователя
+        
         user_data = {
             'id': user_id,
             'username': message.from_user.username,
@@ -101,12 +101,12 @@ def setup_private_handlers(dp: Dispatcher, admin_ids: list):
         }
         await db.add_or_update_user(user_data)
         
-        # Логируем действие
+        
         await db.log_user_action(user_id, 'stats_button_click')
         
         if user_id in admin_ids:
             try:
-                # Получаем статистику из базы данных
+                
                 stats = await db.get_total_stats()
                 user_stats = await db.get_user_stats(user_id)
                 
@@ -127,7 +127,7 @@ def setup_private_handlers(dp: Dispatcher, admin_ids: list):
                 logger.error(f"Ошибка получения статистики: {e}")
                 await message.answer("❌ Ошибка получения статистики")
         else:
-            # Статистика для обычных пользователей
+            
             user_stats = await db.get_user_stats(user_id)
             user_stats_text = (
                 f"📊 <b>Ваша статистика:</b>\n\n"
@@ -143,7 +143,7 @@ def setup_private_handlers(dp: Dispatcher, admin_ids: list):
     async def feedback_button(message: types.Message, state: FSMContext):
         user_id = message.from_user.id
         
-        # Обновляем статистику пользователя
+        
         user_data = {
             'id': user_id,
             'username': message.from_user.username,
@@ -180,11 +180,11 @@ def setup_private_handlers(dp: Dispatcher, admin_ids: list):
         feedback_text = message.text
         user = message.from_user
         
-        # Сохраняем обратную связь в базу данных
+        
         await db.add_feedback(user_id, feedback_text)
         await db.log_user_action(user_id, 'feedback_sent', f"Длина: {len(feedback_text)}")
         
-        # Отправляем админам
+        
         for admin_id in admin_ids:
             try:
                 await bot.send_message(
@@ -200,12 +200,12 @@ def setup_private_handlers(dp: Dispatcher, admin_ids: list):
         )
         await state.clear()
 
-    # Новая команда для прямой связи с поддержкой
+    
     @dp.message(Command('support'))
     async def support_command(message: types.Message, state: FSMContext):
         user_id = message.from_user.id
         
-        # Обновляем статистику пользователя
+       
         user_data = {
             'id': user_id,
             'username': message.from_user.username,
@@ -236,11 +236,11 @@ def setup_private_handlers(dp: Dispatcher, admin_ids: list):
         support_text = message.text
         user = message.from_user
         
-        # Сохраняем обращение в поддержку
+        
         await db.add_feedback(user_id, f"SUPPORT: {support_text}")
         await db.log_user_action(user_id, 'support_sent', f"Длина: {len(support_text)}")
         
-        # Отправляем админам
+        
         for admin_id in admin_ids:
             try:
                 await bot.send_message(
@@ -256,12 +256,12 @@ def setup_private_handlers(dp: Dispatcher, admin_ids: list):
         )
         await state.clear()
 
-    # Команда для просмотра пользователей
+    
     @dp.message(Command('users'))
     async def show_users(message: types.Message):
         user_id = message.from_user.id
         
-        # Обновляем статистику пользователя
+        
         user_data = {
             'id': user_id,
             'username': message.from_user.username,
@@ -281,7 +281,7 @@ def setup_private_handlers(dp: Dispatcher, admin_ids: list):
                 return
             
             users_text = "👥 <b>Список пользователей:</b>\n\n"
-            for i, user in enumerate(users[:10], 1):  # Показываем первых 10
+            for i, user in enumerate(users[:10], 1):  
                 user_id, username, first_name, last_name, messages_count, first_seen, last_seen = user
                 name = f"{first_name or ''} {last_name or ''}".strip() or "Без имени"
                 username_str = f"(@{username})" if username else ""
@@ -306,7 +306,7 @@ def setup_private_handlers(dp: Dispatcher, admin_ids: list):
     async def help_button(message: types.Message):
         user_id = message.from_user.id
         
-        # Обновляем статистику пользователя
+        
         user_data = {
             'id': user_id,
             'username': message.from_user.username,
@@ -341,7 +341,7 @@ def setup_private_handlers(dp: Dispatcher, admin_ids: list):
     async def channel_info(message: types.Message):
         user_id = message.from_user.id
         
-        # Обновляем статистику пользователя
+        
         user_data = {
             'id': user_id,
             'username': message.from_user.username,
@@ -370,7 +370,7 @@ def setup_private_handlers(dp: Dispatcher, admin_ids: list):
     async def games_menu(message: types.Message):
         user_id = message.from_user.id
         
-        # Обновляем статистику пользователя
+        
         user_data = {
             'id': user_id,
             'username': message.from_user.username,
@@ -391,12 +391,12 @@ def setup_private_handlers(dp: Dispatcher, admin_ids: list):
             reply_markup=get_games_keyboard()
         )
 
-    # Улучшенная игра в угадай число с FSM
+    
     @dp.message(F.text == "🎯 Угадай число")
     async def start_number_game(message: types.Message, state: FSMContext):
         user_id = message.from_user.id
         
-        # Обновляем статистику пользователя
+        
         user_data = {
             'id': user_id,
             'username': message.from_user.username,
@@ -411,7 +411,7 @@ def setup_private_handlers(dp: Dispatcher, admin_ids: list):
         secret_number = random.randint(1, 100)
         attempts = 0
         
-        # Сохраняем состояние игры
+        
         await state.update_data(
             secret_number=secret_number,
             attempts=attempts,
@@ -459,7 +459,7 @@ def setup_private_handlers(dp: Dispatcher, admin_ids: list):
                 await message.answer(f"🔻 Число МЕНЬШЕ чем {guess}\n"
                                    f"Попытка: {attempts}/{max_attempts}")
             else:
-                # Победа!
+                
                 await message.answer(
                     f"🎉 <b>ПОБЕДА!</b> 🎉\n\n"
                     f"✅ Ты угадал число {secret_number}!\n"
@@ -472,7 +472,7 @@ def setup_private_handlers(dp: Dispatcher, admin_ids: list):
                 await state.clear()
                 return
             
-            # Проверка на превышение попыток
+            
             if attempts >= max_attempts:
                 await message.answer(
                     f"💔 <b>Игра окончена!</b>\n\n"
@@ -492,7 +492,7 @@ def setup_private_handlers(dp: Dispatcher, admin_ids: list):
     async def random_number(message: types.Message):
         user_id = message.from_user.id
         
-        # Обновляем статистику пользователя
+        
         user_data = {
             'id': user_id,
             'username': message.from_user.username,
@@ -516,7 +516,7 @@ def setup_private_handlers(dp: Dispatcher, admin_ids: list):
     async def settings_button(message: types.Message):
         user_id = message.from_user.id
         
-        # Обновляем статистику пользователя
+        
         user_data = {
             'id': user_id,
             'username': message.from_user.username,
@@ -538,7 +538,7 @@ def setup_private_handlers(dp: Dispatcher, admin_ids: list):
     async def notifications_settings(message: types.Message, state: FSMContext):
         user_id = message.from_user.id
         
-        # Обновляем статистику пользователя
+        
         user_data = {
             'id': user_id,
             'username': message.from_user.username,
@@ -561,7 +561,7 @@ def setup_private_handlers(dp: Dispatcher, admin_ids: list):
     async def language_settings(message: types.Message, state: FSMContext):
         user_id = message.from_user.id
         
-        # Обновляем статистику пользователя
+        
         user_data = {
             'id': user_id,
             'username': message.from_user.username,
@@ -584,7 +584,7 @@ def setup_private_handlers(dp: Dispatcher, admin_ids: list):
     async def back_button(message: types.Message, state: FSMContext):
         user_id = message.from_user.id
         
-        # Обновляем статистику пользователя
+        
         user_data = {
             'id': user_id,
             'username': message.from_user.username,
@@ -611,7 +611,7 @@ def setup_private_handlers(dp: Dispatcher, admin_ids: list):
     async def guess_command(message: types.Message):
         user_id = message.from_user.id
         
-        # Обновляем статистику пользователя
+        
         user_data = {
             'id': user_id,
             'username': message.from_user.username,
@@ -635,7 +635,7 @@ def setup_private_handlers(dp: Dispatcher, admin_ids: list):
         except (IndexError, ValueError):
             await message.answer("Используйте: /guess число (от 1 до 100)")
 
-    # Обработка обычных сообщений (не кнопок меню)
+    
     @dp.message(
         F.chat.type == "private",
         ~F.text.in_([
@@ -648,7 +648,7 @@ def setup_private_handlers(dp: Dispatcher, admin_ids: list):
         user = message.from_user
         user_id = user.id
         
-        # Обновляем статистику пользователя
+        
         user_data = {
             'id': user_id,
             'username': user.username,
@@ -657,16 +657,16 @@ def setup_private_handlers(dp: Dispatcher, admin_ids: list):
         }
         await db.add_or_update_user(user_data)
         
-        # Логируем действие
+        
         await db.log_user_action(user_id, 'message_sent', f"Тип: {message.content_type}")
         
-        # Показываем клавиатуру
+        
         await message.answer(
             "Выберите действие на клавиатуре ниже 👇",
             reply_markup=get_main_keyboard()
         )
 
-    # Админская команда для рассылки
+    
     @dp.message(Command('broadcast'))
     async def broadcast_command(message: types.Message, state: FSMContext):
         user_id = message.from_user.id
@@ -708,7 +708,7 @@ def setup_private_handlers(dp: Dispatcher, admin_ids: list):
                     parse_mode="HTML"
                 )
                 success_count += 1
-                await asyncio.sleep(0.1)  # Задержка чтобы не превысить лимиты
+                await asyncio.sleep(0.1)  
             except Exception as e:
                 fail_count += 1
                 logger.error(f"Ошибка отправки пользователю {user[0]}: {e}")
@@ -756,13 +756,13 @@ def setup_private_handlers(dp: Dispatcher, admin_ids: list):
         languages = {"ru": "Русский", "en": "English", "es": "Español"}
         await callback.answer(f"🌐 Язык изменен на {languages.get(lang, lang)}!", show_alert=False)
 
-    # Команда для отладки базы данных
+    
     @dp.message(Command('debug_db'))
     async def debug_db_command(message: types.Message):
         """Команда для отладки базы данных"""
         user_id = message.from_user.id
         
-        # Обновляем статистику пользователя
+        
         user_data = {
             'id': user_id,
             'username': message.from_user.username,
@@ -776,7 +776,7 @@ def setup_private_handlers(dp: Dispatcher, admin_ids: list):
             return
         
         try:
-            # Показываем структуру таблицы
+            
             async with aiosqlite.connect('bot.db') as db_conn:
                 cursor = await db_conn.execute("PRAGMA table_info(user_stats)")
                 columns = await cursor.fetchall()
@@ -785,7 +785,7 @@ def setup_private_handlers(dp: Dispatcher, admin_ids: list):
                 for col in columns:
                     debug_text += f"• {col[1]} ({col[2]})\n"
                 
-                # Показываем первые 5 пользователей
+                
                 cursor = await db_conn.execute("SELECT * FROM user_stats LIMIT 5")
                 users = await cursor.fetchall()
                 
@@ -793,7 +793,7 @@ def setup_private_handlers(dp: Dispatcher, admin_ids: list):
                 for user in users:
                     debug_text += f"ID: {user[0]}, Сообщений: {user[4]}, Имя: {user[2] or 'Нет'}\n"
                 
-                # Общая статистика
+                
                 cursor = await db_conn.execute("SELECT COUNT(*) FROM user_stats")
                 total_users = (await cursor.fetchone())[0]
                 
