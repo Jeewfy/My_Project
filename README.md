@@ -14,26 +14,26 @@
 ### Установка и запуск
 
 
-# Клонирование репозитория
+# 1.Клонирование репозитория
 git clone https://github.com/yourusername/sports-bot.git
 cd sports-bot
 
-# Создание виртуального окружения
+# 2.Создание виртуального окружения
 python -m venv venv
 
-# Активация окружения
+# 3.Активация окружения
 # Windows:
 .\venv\Scripts\activate
 # Linux/MacOS:
 source venv/bin/activate
 
-# Установка зависимостей
+# 4.Установка зависимостей
 pip install -r requirements.txt
 
-# Настройка конфигурации
+# 5.Настройка конфигурации
 cp .env.example .env
 
-# Запуск бота
+# 6.Запуск бота
 python main.py
 ## ⚙️ Конфигурация
 
