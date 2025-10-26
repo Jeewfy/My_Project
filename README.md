@@ -39,7 +39,6 @@ python main.py
 
 Создайте файл `.env` в корне проекта:
 
-```env
 TOKEN=your_telegram_bot_token_here
 CHANNEL_ID=@your_channel_username
 ADMIN_IDS=123456789,987654321
@@ -98,7 +97,7 @@ sports-bot/
 
 ## 🔧 Разработка
 
-```bash
+
 # Установка для разработки
 git clone https://github.com/yourusername/sports-bot.git
 cd sports-bot
