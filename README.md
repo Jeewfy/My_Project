@@ -13,7 +13,7 @@
 
 ### Установка и запуск
 
-```bash
+
 # Клонирование репозитория
 git clone https://github.com/yourusername/sports-bot.git
 cd sports-bot
