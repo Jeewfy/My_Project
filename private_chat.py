@@ -2,7 +2,7 @@ import asyncio
 import os
 import aiosqlite
 from aiogram import Dispatcher, types, F, Bot
-from aiogram.filters import Command, StateFilter
+from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from loguru import logger
