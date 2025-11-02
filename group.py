@@ -9,31 +9,30 @@ group_games = {}
 
 BAD_WORDS = [
     'мат1', 'мат2', 'мат3', 'плохоеслово', 'оскорбление'
-    
+
 ]
 
+
 def setup_group_handlers(dp: Dispatcher):
-    
-    
+
     @dp.message(F.chat.type.in_({"group", "supergroup"}) & ~F.text.startswith('/'))
     async def filter_bad_words(message: types.Message):
-        
+
         text = message.text.lower() if message.text else ""
-        
+
         found_bad_words = []
         for word in BAD_WORDS:
             if re.search(r'\b' + re.escape(word) + r'\b', text, re.IGNORECASE):
                 found_bad_words.append(word)
-        
+
         if found_bad_words:
-            
+
             try:
                 await message.delete()
                 logger.info(f"Удалено сообщение с матом в чате {message.chat.id}: {found_bad_words}")
             except Exception as e:
                 logger.error(f"Не удалось удалить сообщение: {e}")
-            
-            
+
             warning_msg = (
                 f"⚠️ {message.from_user.first_name}, пожалуйста, не используйте ненормативную лексику!\n"
                 f"Обнаружены запрещенные слова: {', '.join(found_bad_words)}"
@@ -46,8 +45,7 @@ def setup_group_handlers(dp: Dispatcher):
         chat_id = message.chat.id
         secret_number = random.randint(1, 100)
         group_games[chat_id] = secret_number
-        
-        
+
         game_announcement = (
             f"🎮 <b>ИГРА НАЧАЛАСЬ!</b> 🎮\n\n"
             f"👤 Запустил: {message.from_user.first_name}\n"
@@ -57,7 +55,7 @@ def setup_group_handlers(dp: Dispatcher):
             f"🎯 Например: <code>/guess 42</code>\n"
             f"🏆 Кто первый угадает - тот победил!"
         )
-        
+
         await message.answer(game_announcement, parse_mode="HTML")
         logger.info(f"Группа: игра начата в {chat_id}, загадано число {secret_number}")
 
@@ -65,7 +63,7 @@ def setup_group_handlers(dp: Dispatcher):
     async def make_guess(message: types.Message):
         chat_id = message.chat.id
         if chat_id not in group_games:
-            
+
             await message.answer(
                 "🎯 Игра не активна! Хотите начать?\n"
                 "Напишите: /start_game"
@@ -82,7 +80,6 @@ def setup_group_handlers(dp: Dispatcher):
             )
             return
 
-        
         if guess < 1 or guess > 100:
             await message.answer("📏 Число должно быть от 1 до 100!")
             return
@@ -95,7 +92,6 @@ def setup_group_handlers(dp: Dispatcher):
         elif guess > secret:
             await message.answer(f"🔻 {user_name}, мое число МЕНЬШЕ чем {guess}!")
         else:
-            # Победа!
             victory_message = (
                 f"🎉 <b>ПОБЕДА!</b> 🎉\n\n"
                 f"🏆 {user_name} угадал число!\n"
@@ -107,7 +103,6 @@ def setup_group_handlers(dp: Dispatcher):
             del group_games[chat_id]
             logger.info(f"Группа: игра завершена в {chat_id}, победитель {user_name}")
 
-    
     @dp.message(Command('game_status'), F.chat.type.in_({"group", "supergroup"}))
     async def game_status(message: types.Message):
         chat_id = message.chat.id
@@ -123,7 +118,6 @@ def setup_group_handlers(dp: Dispatcher):
                 "🎯 Чтобы начать: /start_game"
             )
 
-    
     @dp.message(Command('badwords'), F.chat.type.in_({"group", "supergroup"}))
     async def show_bad_words(message: types.Message):
         await message.answer(

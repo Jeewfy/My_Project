@@ -3,6 +3,7 @@ import asyncio
 from datetime import datetime
 from loguru import logger
 
+
 class Database:
     def __init__(self, db_path='bot.db'):
         self.db_path = db_path
@@ -10,12 +11,9 @@ class Database:
     async def init_db(self):
         """Инициализация базы данных и создание таблиц"""
         async with aiosqlite.connect(self.db_path) as db:
-            
             await db.execute('DROP TABLE IF EXISTS user_stats')
             await db.execute('DROP TABLE IF EXISTS feedback')
             await db.execute('DROP TABLE IF EXISTS user_actions')
-            
-            
             await db.execute('''
                 CREATE TABLE IF NOT EXISTS user_stats (
                     user_id INTEGER PRIMARY KEY,
@@ -28,8 +26,7 @@ class Database:
                     last_seen TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )
             ''')
-            
-            
+
             await db.execute('''
                 CREATE TABLE IF NOT EXISTS feedback (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -39,8 +36,7 @@ class Database:
                     FOREIGN KEY (user_id) REFERENCES user_stats (user_id)
                 )
             ''')
-            
-            
+
             await db.execute('''
                 CREATE TABLE IF NOT EXISTS user_actions (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -51,26 +47,26 @@ class Database:
                     FOREIGN KEY (user_id) REFERENCES user_stats (user_id)
                 )
             ''')
-            
+
             await db.commit()
         logger.info("База данных инициализирована")
 
     async def add_or_update_user(self, user: dict):
         """Добавление или обновление пользователя"""
         async with aiosqlite.connect(self.db_path) as db:
-            
+
             cursor = await db.execute(
                 'SELECT messages_count FROM user_stats WHERE user_id = ?',
                 (user['id'],)
             )
             existing_user = await cursor.fetchone()
-            
+
             if existing_user:
-                
+
                 current_count = existing_user[0]
                 await db.execute('''
-                    UPDATE user_stats 
-                    SET username = ?, first_name = ?, last_name = ?, 
+                    UPDATE user_stats
+                    SET username = ?, first_name = ?, last_name = ?,
                         messages_count = ?, last_seen = ?
                     WHERE user_id = ?
                 ''', (
@@ -82,9 +78,9 @@ class Database:
                     user['id']
                 ))
             else:
-                
+
                 await db.execute('''
-                    INSERT INTO user_stats 
+                    INSERT INTO user_stats
                     (user_id, username, first_name, last_name, messages_count, last_seen)
                     VALUES (?, ?, ?, ?, 1, ?)
                 ''', (
@@ -94,14 +90,14 @@ class Database:
                     user.get('last_name'),
                     datetime.now()
                 ))
-            
+
             await db.commit()
 
     async def increment_messages_count(self, user_id: int):
         """Увеличение счетчика сообщений пользователя"""
         async with aiosqlite.connect(self.db_path) as db:
             await db.execute('''
-                UPDATE user_stats 
+                UPDATE user_stats
                 SET messages_count = messages_count + 1, last_seen = ?
                 WHERE user_id = ?
             ''', (datetime.now(), user_id))
@@ -111,7 +107,7 @@ class Database:
         """Добавление обратной связи"""
         async with aiosqlite.connect(self.db_path) as db:
             await db.execute('''
-                INSERT INTO feedback (user_id, message) 
+                INSERT INTO feedback (user_id, message)
                 VALUES (?, ?)
             ''', (user_id, message))
             await db.commit()
@@ -120,7 +116,7 @@ class Database:
         """Логирование действий пользователя"""
         async with aiosqlite.connect(self.db_path) as db:
             await db.execute('''
-                INSERT INTO user_actions (user_id, action_type, details) 
+                INSERT INTO user_actions (user_id, action_type, details)
                 VALUES (?, ?, ?)
             ''', (user_id, action_type, details))
             await db.commit()
@@ -139,7 +135,7 @@ class Database:
         async with aiosqlite.connect(self.db_path) as db:
             cursor = await db.execute('''
                 SELECT user_id, username, first_name, last_name, messages_count, first_seen, last_seen
-                FROM user_stats 
+                FROM user_stats
                 ORDER BY last_seen DESC
             ''')
             users = await cursor.fetchall()
@@ -150,13 +146,13 @@ class Database:
         async with aiosqlite.connect(self.db_path) as db:
             cursor = await db.execute('SELECT COUNT(*) FROM user_stats')
             total_users = (await cursor.fetchone())[0]
-            
+
             cursor = await db.execute('SELECT SUM(messages_count) FROM user_stats')
             total_messages = (await cursor.fetchone())[0] or 0
-            
+
             cursor = await db.execute('SELECT COUNT(*) FROM feedback')
             total_feedback = (await cursor.fetchone())[0]
-            
+
             return {
                 'total_users': total_users,
                 'total_messages': total_messages,
