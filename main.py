@@ -79,7 +79,6 @@ async def setup_handlers():
         from group import setup_group_handlers
         from channel import setup_channel_handlers
 
-
         setup_private_handlers(dp, ADMIN_IDS)
         setup_group_handlers(dp)
         setup_channel_handlers(dp, bot)
